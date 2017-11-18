@@ -29,6 +29,9 @@ pathesB = read_path(pathB)
 IMAGE_HEIGHT = 256
 IMAGE_WIDTH = 256
 
+def save_image(path, image):
+    scipy.misc.imsave(path, image)
+
 def load_img(path):
     image = scipy.misc.imread(path)
     image = scipy.misc.imresize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
