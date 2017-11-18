@@ -326,9 +326,6 @@ class cycleGAN(object):
                 _, gen_loss = sess.run([self.gen_train_op, self.gen_loss], feed_dict = feed_dict)
                 
                 dis_loss = dis_loss_1 + dis_loss_2
-                
-                print('gen loss',gen_loss)
-                print('dis_loss',dis_loss)
 
                 plot_dis_s = plot_dis_s * smooth_factor + dis_loss * (1 - smooth_factor)
                 plot_gen_s = plot_gen_s * smooth_factor + gen_loss * (1 - smooth_factor)
