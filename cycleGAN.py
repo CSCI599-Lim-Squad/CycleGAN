@@ -122,11 +122,12 @@ def build_resnet_block(inputres, dim, name="resnet"):
 class cycleGAN(object):
     def __init__(self):
         #initiater
-        self.num_epoch = 100
-        self.batch_size = 10
+        self.num_epoch = 50
+        self.batch_size = 1
         self.log_step = 150
         self.visualize_step = 200
-        self.learning_rate = 3e-4
+        self.learning_rate_g = 2e-4
+        self.learning_rate_d = 1e-4
         
         self.dis_name_1 = 'dis1'
         self.dis_name_2 = 'dis2'
@@ -222,11 +223,11 @@ class cycleGAN(object):
     
     def _adviserial_loss(self, logits, labels):
         #binary L2 loss
-        return tf.reduce_sum(tf.square(logits - labels))
+        return tf.reduce_mean(tf.square(logits - labels))
         
     def _cycle_loss(self, logits, labels):
         #L1 loss
-        return tf.losses.absolute_difference(logits, labels)
+        return tf.losses.absolute_difference(logits, labels)/(256*256*3)
     
     def _init_ops(self):
         #operations
@@ -270,18 +271,18 @@ class cycleGAN(object):
         
         self.gen_loss = self.gen_2_to_1_loss + self.gen_1_to_2_loss
         
-        self.dis_loss_1 = self._adviserial_loss(self.real_1_dis, self.real_label)+self._adviserial_loss(self.fake_1_dis, self.fake_label)
+        self.dis_loss_1 = -self._adviserial_loss(self.real_1_dis, self.real_label)-self._adviserial_loss(self.fake_1_dis, self.fake_label)
             
-        self.dis_loss_2 = self._adviserial_loss(self.real_2_dis, self.real_label)+self._adviserial_loss(self.fake_2_dis, self.fake_label)
+        self.dis_loss_2 = -self._adviserial_loss(self.real_2_dis, self.real_label)-self._adviserial_loss(self.fake_2_dis, self.fake_label)
         
         #optimizers and training step
-        dis_optimizer_1 = tf.train.RMSPropOptimizer(self.learning_rate)
+        dis_optimizer_1 = tf.train.RMSPropOptimizer(self.learning_rate_d)
         self.dis_train_op_1 = dis_optimizer_1.minimize(self.dis_loss_1, var_list = self.dis1)
         
-        dis_optimizer_2 = tf.train.RMSPropOptimizer(self.learning_rate)
+        dis_optimizer_2 = tf.train.RMSPropOptimizer(self.learning_rate_d)
         self.dis_train_op_2 = dis_optimizer_2.minimize(self.dis_loss_2, var_list = self.dis2)
         
-        gen_optimizer = tf.train.RMSPropOptimizer(self.learning_rate)
+        gen_optimizer = tf.train.RMSPropOptimizer(self.learning_rate_g)
         self.gen_train_op = gen_optimizer.minimize(self.gen_loss, var_list = self.gen_scope)
         
         
