@@ -122,12 +122,12 @@ def build_resnet_block(inputres, dim, name="resnet"):
 class cycleGAN(object):
     def __init__(self):
         #initiater
-        self.num_epoch = 10
+        self.num_epoch = 50
         self.batch_size = 1
-        self.log_step = 100
+        self.log_step = 150
         self.visualize_step = 200
-        self.code_size = 64
-        self.learning_rate = 1e-4
+        self.learning_rate_g = 2e-4
+        self.learning_rate_d = 1e-4
         
         self.dis_name_1 = 'dis1'
         self.dis_name_2 = 'dis2'
@@ -143,7 +143,7 @@ class cycleGAN(object):
         
         self.batch_size = 1
         
-        self.lamda = 0.5
+        self.lamda = 10
 
         self.input1 = tf.placeholder(tf.float32, [None, 256, 256, 3])
         self.input2 = tf.placeholder(tf.float32, [None, 256, 256, 3])
@@ -223,11 +223,11 @@ class cycleGAN(object):
     
     def _adviserial_loss(self, logits, labels):
         #binary L2 loss
-        return tf.reduce_sum(tf.square(logits - labels))
+        return tf.reduce_mean(tf.square(logits - labels))
         
     def _cycle_loss(self, logits, labels):
         #L1 loss
-        return tf.losses.absolute_difference(logits, labels)
+        return tf.losses.absolute_difference(logits, labels)/(256*256*3)
     
     def _init_ops(self):
         #operations
@@ -261,13 +261,13 @@ class cycleGAN(object):
         self.dis_scope = self.dis1 + self.dis2
         
         #loss functions
-        gan_loss_1 = self._adviserial_loss(self.fake_1_dis, self.fake_label)
+        gan_loss_1 = - self._adviserial_loss(self.fake_1_dis, self.fake_label)
         cycle_loss_1 = self._cycle_loss(self.cycle_fake_1, self.input1)
-        self.gen_2_to_1_loss = - gan_loss_1 + cycle_loss_1
+        self.gen_2_to_1_loss = gan_loss_1 + cycle_loss_1
         
-        gan_loss_2 = self._adviserial_loss(self.fake_2_dis, self.fake_label)
+        gan_loss_2 = - self._adviserial_loss(self.fake_2_dis, self.fake_label)
         cycle_loss_2 = self._cycle_loss(self.cycle_fake_2, self.input2)
-        self.gen_1_to_2_loss = - gan_loss_2 + cycle_loss_2
+        self.gen_1_to_2_loss = gan_loss_2 + cycle_loss_2
         
         self.gen_loss = self.gen_2_to_1_loss + self.gen_1_to_2_loss
         
@@ -276,13 +276,13 @@ class cycleGAN(object):
         self.dis_loss_2 = self._adviserial_loss(self.real_2_dis, self.real_label)+self._adviserial_loss(self.fake_2_dis, self.fake_label)
         
         #optimizers and training step
-        dis_optimizer_1 = tf.train.RMSPropOptimizer(self.learning_rate)
+        dis_optimizer_1 = tf.train.RMSPropOptimizer(self.learning_rate_d)
         self.dis_train_op_1 = dis_optimizer_1.minimize(self.dis_loss_1, var_list = self.dis1)
         
-        dis_optimizer_2 = tf.train.RMSPropOptimizer(self.learning_rate)
+        dis_optimizer_2 = tf.train.RMSPropOptimizer(self.learning_rate_d)
         self.dis_train_op_2 = dis_optimizer_2.minimize(self.dis_loss_2, var_list = self.dis2)
         
-        gen_optimizer = tf.train.RMSPropOptimizer(self.learning_rate)
+        gen_optimizer = tf.train.RMSPropOptimizer(self.learning_rate_g)
         self.gen_train_op = gen_optimizer.minimize(self.gen_loss, var_list = self.gen_scope)
         
         
@@ -324,17 +324,11 @@ class cycleGAN(object):
                     self.is_train: True
                 }
 
-                print('training dis 1')
                 _, dis_loss_1 = sess.run([self.dis_train_op_1, self.dis_loss_1], feed_dict = feed_dict)
-                print('training dis 2')
                 _, dis_loss_2 = sess.run([self.dis_train_op_2, self.dis_loss_2], feed_dict = feed_dict)
-                print('training gen')
                 _, gen_loss = sess.run([self.gen_train_op, self.gen_loss], feed_dict = feed_dict)
                 
                 dis_loss = dis_loss_1 + dis_loss_2
-                
-                print('gen loss',gen_loss)
-                print('dis_loss',dis_loss)
 
                 plot_dis_s = plot_dis_s * smooth_factor + dis_loss * (1 - smooth_factor)
                 plot_gen_s = plot_gen_s * smooth_factor + gen_loss * (1 - smooth_factor)
