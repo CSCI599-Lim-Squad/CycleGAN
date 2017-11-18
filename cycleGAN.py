@@ -119,12 +119,11 @@ def build_resnet_block(inputres, dim, name="resnet"):
 class cycleGAN(object):
     def __init__(self):
         #initiater
-        self.num_epoch = 10
-        self.batch_size = 1
-        self.log_step = 100
+        self.num_epoch = 50
+        self.batch_size = 5
+        self.log_step = 150
         self.visualize_step = 200
-        self.code_size = 64
-        self.learning_rate = 1e-4
+        self.learning_rate = 3e-4
         
         self.dis_name_1 = 'dis1'
         self.dis_name_2 = 'dis2'
@@ -333,24 +332,14 @@ class cycleGAN(object):
                 dis_losses.append(plot_dis_s / plot_ws)
                 gen_losses.append(plot_gen_s / plot_ws)
 
-                if step % self.log_step == 0:
+                if step % self.log_step == 1:
                     print('Iteration {0}: dis loss = {1:.4f}, gen loss = {2:.4f}'.format(step, dis_loss, gen_loss))
-                    generated = sess.run([self.generated_1], feed_dict = {self.input2: [data2[step]]})
-                    generated = np.array(generated[0])
-                    plt.imshow(np.array(generated[0]))
-                    plt.show()
-
-            plt.plot(dis_losses)
-            plt.title('discriminator loss')
-            plt.xlabel('iterations')
-            plt.ylabel('loss')
-            plt.show()
-
-            plt.plot(gen_losses)
-            plt.title('generator loss')
-            plt.xlabel('iterations')
-            plt.ylabel('loss')
-            plt.show()     
+                    generated = sess.run([self.generated_1], feed_dict = {self.input2: [data2[0]]})
+                    print(generated[0].shape)
+                    generated = generated[0]
+                    generated = generated[0]
+                    filename = 'output/%d.png' % (step)
+                    save_image(filename, generated)
 
 
 tf.reset_default_graph()
