@@ -6,7 +6,11 @@ from matplotlib import pyplot as plt
 
 import random
 import os
-from os import scandir
+
+try:
+    from os import scandir, walk
+except ImportError:
+    from scandir import scandir, walk
 
 pathA = 'data/apple2orange/trainA'
 pathB = 'data/apple2orange/trainA'
