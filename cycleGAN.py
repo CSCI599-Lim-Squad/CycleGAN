@@ -140,7 +140,7 @@ class cycleGAN(object):
         
         self.batch_size = 1
         
-        self.lamda = 0.5
+        self.lamda = 10
 
         self.input1 = tf.placeholder(tf.float32, [None, 256, 256, 3])
         self.input2 = tf.placeholder(tf.float32, [None, 256, 256, 3])
@@ -321,11 +321,8 @@ class cycleGAN(object):
                     self.is_train: True
                 }
 
-                print('training dis 1')
                 _, dis_loss_1 = sess.run([self.dis_train_op_1, self.dis_loss_1], feed_dict = feed_dict)
-                print('training dis 2')
                 _, dis_loss_2 = sess.run([self.dis_train_op_2, self.dis_loss_2], feed_dict = feed_dict)
-                print('training gen')
                 _, gen_loss = sess.run([self.gen_train_op, self.gen_loss], feed_dict = feed_dict)
                 
                 dis_loss = dis_loss_1 + dis_loss_2
