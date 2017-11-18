@@ -119,8 +119,8 @@ def build_resnet_block(inputres, dim, name="resnet"):
 class cycleGAN(object):
     def __init__(self):
         #initiater
-        self.num_epoch = 50
-        self.batch_size = 5
+        self.num_epoch = 100
+        self.batch_size = 10
         self.log_step = 150
         self.visualize_step = 200
         self.learning_rate = 3e-4
