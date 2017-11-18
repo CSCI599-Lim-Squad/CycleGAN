@@ -263,11 +263,11 @@ class cycleGAN(object):
         #loss functions
         gan_loss_1 = self._adviserial_loss(self.fake_1_dis, self.real_label)
         cycle_loss_1 = self._cycle_loss(self.cycle_fake_1, self.input1)
-        self.gen_2_to_1_loss = gan_loss_1 + cycle_loss_1
+        self.gen_2_to_1_loss = gan_loss_1 + self.lamda*cycle_loss_1
         
         gan_loss_2 = self._adviserial_loss(self.fake_2_dis, self.real_label)
         cycle_loss_2 = self._cycle_loss(self.cycle_fake_2, self.input2)
-        self.gen_1_to_2_loss = gan_loss_2 + cycle_loss_2
+        self.gen_1_to_2_loss = gan_loss_2 + self.lamda*cycle_loss_2
         
         self.gen_loss = self.gen_2_to_1_loss + self.gen_1_to_2_loss
         
