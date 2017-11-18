@@ -362,7 +362,7 @@ class cycleGAN(object):
 tf.reset_default_graph()
 
 with tf.Session() as sess:
-    with tf.device('/cpu:0'):
+    with tf.device('/gpu:0'):
         cycle_gan = cycleGAN()
         sess.run(tf.global_variables_initializer())
         cycle_gan.train(sess, dataA, dataB)
