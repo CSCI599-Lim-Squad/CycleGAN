@@ -221,6 +221,14 @@ class cycleGAN(object):
 
         return out_gen
     
+    def _adviserial_loss(self, logits, labels):
+        #binary L2 loss
+        return tf.reduce_mean(tf.square(logits - labels))
+        
+    def _cycle_loss(self, logits, labels):
+        #L1 loss
+        return tf.losses.absolute_difference(logits, labels)/(256*256*3)
+    
     def _init_ops(self):
         #operations
         #D1(X1)
