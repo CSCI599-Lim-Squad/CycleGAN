@@ -143,7 +143,7 @@ class cycleGAN(object):
         
         self.batch_size = 1
         
-        self.lamda = 10
+        self.lamda = 10.0
 
         self.input1 = tf.placeholder(tf.float32, [None, 256, 256, 3])
         self.input2 = tf.placeholder(tf.float32, [None, 256, 256, 3])
@@ -227,7 +227,7 @@ class cycleGAN(object):
         
     def _cycle_loss(self, logits, labels):
         #L1 loss
-        return tf.losses.absolute_difference(logits, labels)/(256*256*3)
+        return tf.reduce_mean(tf.abs(logits - labels))
     
     def _init_ops(self):
         #operations
