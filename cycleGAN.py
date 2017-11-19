@@ -126,8 +126,8 @@ class cycleGAN(object):
         self.batch_size = 1
         self.log_step = 150
         self.visualize_step = 200
-        self.learning_rate_g = 2e-4
-        self.learning_rate_d = 1e-4
+        self.learning_rate_g = 3e-4
+        self.learning_rate_d = 7e-5
         
         self.dis_name_1 = 'dis1'
         self.dis_name_2 = 'dis2'
