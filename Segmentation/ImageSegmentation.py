@@ -18,7 +18,7 @@ IMAGE_WIDTH = 256
 kind = 'long_pants2500'
 
 TO_TRAIN_PATH = '2500_TRAIN/'
-GROUND_TRUTH_PATH = '{}_Truth/'.format(kind)
+GROUND_TRUTH_PATH = '{}_TRUTH/'.format(kind)
 VALIDATION_PATH = '997_Train/'
 
 def conv2d_batch_relu(input, kernel_size, stride, num_filter, scope):
@@ -202,3 +202,4 @@ with tf.Session() as sess:
     model.train(sess)
     saver = tf.train.Saver()
     saver.save(sess, "lib/{}.ckpt".format(kind))
+
