@@ -166,7 +166,7 @@ class SegmentationNN:
                     
                     images = np.concatenate(generated_image)
                     images = images[:,:,:,0]
-                    iamges = np.reshape(images, (-1, IMAGE_WIDTH))
+                    iamges = np.reshape(images, (self.batch_size, IMAGE_WIDTH))
                     print('output shape: ',images.shape)
                     
                     save_path = 'output/epoch_0.jpg'
