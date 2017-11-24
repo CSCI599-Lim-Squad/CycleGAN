@@ -179,7 +179,10 @@ class SegmentationNN:
             }
             generated_image = sess.run([self.output], feed_dict = feed_dict)
             
-            images = np.concatenate(generated_image)            
+            images = np.concatenate(generated_image)
+            images = images[:,:,:,0]
+            images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))
+            print('output shape: ',images.shape)          
             save_path = 'output/epoch_{}.jpg'.format(epoch + 1)
             scipy.misc.imsave(save_path, images)            
             
