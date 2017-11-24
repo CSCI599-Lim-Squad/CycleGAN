@@ -69,7 +69,7 @@ def unsample(input, outputdim):
 
 class SegmentationNN:
     def __init__(self):
-        self.num_epoch = 10
+        self.num_epoch = 50
         self.batch_size = 10
         self.input = tf.placeholder(tf.float32, [self.batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, 3])
         self.label = tf.placeholder(tf.float32, [self.batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, 1])
@@ -90,7 +90,6 @@ class SegmentationNN:
         label = []
         for file in scandir(TO_TRAIN_PATH):
             if file.name.endswith('jpg') or file.name.endswith('png') and file.is_file():
-                print(file.name)
                 image = scipy.misc.imread(file.path)
                 image = scipy.misc.imresize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
                 to_train.append(image)
