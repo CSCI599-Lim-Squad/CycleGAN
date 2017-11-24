@@ -67,7 +67,6 @@ def unsample(input, outputdim):
     print('Unsampling Layer: ', unsample.shape)
     return unsample
 
-
 class SegmentationNN:
     def __init__(self):
         self.num_epoch = 10
@@ -96,7 +95,7 @@ class SegmentationNN:
                 to_train.append(image)
                 
                 image = scipy.misc.imread((GROUND_TRUTH_PATH + file.name).replace('jpg', 'png'))              
-                # image = scipy.misc.imresize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
+                image = scipy.misc.imresize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
                 image = np.reshape(image, (IMAGE_HEIGHT, IMAGE_WIDTH, 1))
                 label.append(image)
                 count = count + 1
