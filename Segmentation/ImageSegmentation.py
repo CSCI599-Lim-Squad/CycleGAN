@@ -200,6 +200,5 @@ with tf.Session() as sess:
     model.load_data(TO_TRAIN_PATH, GROUND_TRUTH_PATH)
     model.load_validation(VALIDATION_PATH)
     model.train(sess)
-
-	saver = tf.train.Saver()
+    saver = tf.train.Saver()
     saver.save(sess, "lib/{}.ckpt".format(kind))
