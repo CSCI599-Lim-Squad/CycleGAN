@@ -73,6 +73,8 @@ class SegmentationNN:
         self.label = tf.placeholder(tf.float32, [self.batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, 1])
         self.output = self.build_model(self.input)
         print(self.output.shape)
+
+        self.log_step = 50
         
         self.lr = 1e-4
         
