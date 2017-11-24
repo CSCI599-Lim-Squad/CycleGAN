@@ -17,6 +17,7 @@ IMAGE_WIDTH = 256
 
 TO_TRAIN_PATH = '997_Train/'
 GROUND_TRUTH_PATH = '997_Truth/'
+VALIDATION_PATH = '997_Train/'
 
 def conv2d_batch_relu(input, kernel_size, stride, num_filter, scope):
     with tf.variable_scope(scope):       
@@ -79,6 +80,7 @@ class SegmentationNN:
         self.lr = 1e-4
         
         self.loss = self._loss(self.output, self.label)
+        self.accuracy = self._accuracy(self.output, self.label)
         self.optimizer = self._optimizer()
         
     def load_data(self, TO_TRAIN_PATH, GROUD_TRUTH_PATH):
@@ -102,6 +104,18 @@ class SegmentationNN:
         self.label_set = label
         self.num_training = count
         return to_train, label
+
+    def load_validation(self, VALIDATION_PATH):
+    	validation = []
+        count = 0
+        for file in scandir(VALIDATION_PATH):
+            if file.name.endswith('jpg') or file.name.endswith('png') and file.is_file():
+                image = scipy.misc.imread(file.path)
+                image = scipy.misc.imresize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
+                validation.append(image)
+        
+        self.validation_set = validation
+
         
     def build_model(self, input):
         conv1 = conv2d_batch_relu(input, 7, 2, 64, 'conv_1_1')
@@ -133,12 +147,16 @@ class SegmentationNN:
     def _loss(self, logits, labels):
         return tf.reduce_mean(tf.squared_difference(logits, labels))
 
+    def _accuracy(self, logits, labels):
+    	return tf.reduce_mean(tf.divide(tf.abs(logits - labels), labels))
+
     def _optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.lr).minimize(self.loss)
         
     def train(self, sess):
         iteration = 0
         losses = []
+        accuracies = []
         for epoch in range(self.num_epoch):
             for it in range(self.num_training // self.batch_size):
                 fetches = [self.optimizer, self.loss]
@@ -151,38 +169,24 @@ class SegmentationNN:
                     self.label: _label
                 }
         
-                _, loss = sess.run([self.optimizer, self.loss], feed_dict = feed_dict)
+                _, loss, accuracy = sess.run([self.optimizer, self.loss, self.accuracy], feed_dict = feed_dict)
             
                 losses.append(loss)
+                accuracies.append(accuracy)
             
                 if iteration%self.log_step is 0:
-                    print('iteration: {} loss: {}'.format(iteration, loss))
-                    
-                if iteration is 0:
-                    feed_dict = {
-                        self.input: self.training_set[0: self.batch_size]
-                    }
-                    generated_image = sess.run([self.output], feed_dict = feed_dict)   
-                    
-                    images = np.concatenate(generated_image)
-                    images = images[:,:,:,0]
-                    images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))
-                    print('output shape: ',images.shape)
-                    
-                    save_path = 'output/epoch_0.jpg'
-                    scipy.misc.imsave(save_path, images)
+                    print('iteration: {} loss: {}, accuracy: {}'.format(iteration, loss, accuracy))
                     
                 iteration = iteration + 1
             
             feed_dict = {
-                self.input: self.training_set[0: self.batch_size]
+                self.input: self.validation_set[0: self.batch_size]
             }
             generated_image = sess.run([self.output], feed_dict = feed_dict)
             
             images = np.concatenate(generated_image)
             images = images[:,:,:,0]
-            images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))
-            print('output shape: ',images.shape)          
+            images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))          
             save_path = 'output/epoch_{}.jpg'.format(epoch + 1)
             scipy.misc.imsave(save_path, images)            
             
@@ -192,4 +196,5 @@ with tf.Session() as sess:
     model = SegmentationNN()
     sess.run(tf.global_variables_initializer())
     model.load_data(TO_TRAIN_PATH, GROUND_TRUTH_PATH)
+    model.load_validation(VALIDATION_PATH)
     model.train(sess)
