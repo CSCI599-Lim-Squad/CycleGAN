@@ -15,8 +15,10 @@ except ImportError:
 IMAGE_HEIGHT = 256
 IMAGE_WIDTH = 256
 
-TO_TRAIN_PATH = '997_Train/'
-GROUND_TRUTH_PATH = '997_Truth/'
+kind = 'long_pants2500'
+
+TO_TRAIN_PATH = '2500_TRAIN/'
+GROUND_TRUTH_PATH = '{}_Truth/'.format(kind)
 VALIDATION_PATH = '997_Train/'
 
 def conv2d_batch_relu(input, kernel_size, stride, num_filter, scope):
@@ -198,3 +200,6 @@ with tf.Session() as sess:
     model.load_data(TO_TRAIN_PATH, GROUND_TRUTH_PATH)
     model.load_validation(VALIDATION_PATH)
     model.train(sess)
+
+	saver = tf.train.Saver()
+    saver.save(sess, "lib/{}.ckpt".format(kind))
