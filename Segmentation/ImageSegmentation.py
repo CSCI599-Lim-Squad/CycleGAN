@@ -18,7 +18,7 @@ IMAGE_WIDTH = 256
 kind = 'long_pants2500'
 
 TO_TRAIN_PATH = '2500_TRAIN/'
-GROUND_TRUTH_PATH = '{}_TRUTH/'.format(kind)
+GROUND_TRUTH_PATH = 'long_pants2500_TRUTH/'
 VALIDATION_PATH = '997_Train/'
 
 def conv2d_batch_relu(input, kernel_size, stride, num_filter, scope):
@@ -86,10 +86,11 @@ class SegmentationNN:
         
     def load_data(self, TO_TRAIN_PATH, GROUD_TRUTH_PATH):
         to_train = []
+        count=0
         label = []
-        count = 0
         for file in scandir(TO_TRAIN_PATH):
             if file.name.endswith('jpg') or file.name.endswith('png') and file.is_file():
+                print(file.name)
                 image = scipy.misc.imread(file.path)
                 image = scipy.misc.imresize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
                 to_train.append(image)
@@ -107,8 +108,7 @@ class SegmentationNN:
         return to_train, label
 
     def load_validation(self, VALIDATION_PATH):
-    	validation = []
-        count = 0
+        validation = []
         for file in scandir(VALIDATION_PATH):
             if file.name.endswith('jpg') or file.name.endswith('png') and file.is_file():
                 image = scipy.misc.imread(file.path)
@@ -116,6 +116,7 @@ class SegmentationNN:
                 validation.append(image)
         
         self.validation_set = validation
+        return validation
 
         
     def build_model(self, input):
@@ -149,7 +150,7 @@ class SegmentationNN:
         return tf.reduce_mean(tf.squared_difference(logits, labels))
 
     def _accuracy(self, logits, labels):
-    	return tf.reduce_mean(tf.divide(tf.abs(logits - labels), labels))
+        return tf.reduce_mean(tf.divide(tf.abs(logits - labels), labels))
 
     def _optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.lr).minimize(self.loss)
@@ -189,7 +190,7 @@ class SegmentationNN:
             images = images[:,:,:,0]
             images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))          
             save_path = 'output/epoch_{}.jpg'.format(epoch + 1)
-            scipy.misc.imsave(save_path, images)            
+            scipy.misc.imsave(save_path, images) 
             
 tf.reset_default_graph()
 
@@ -200,5 +201,5 @@ with tf.Session() as sess:
     model.load_validation(VALIDATION_PATH)
     model.train(sess)
     saver = tf.train.Saver()
-    saver.save(sess, "lib/{}.ckpt".format(kind))
+    saver.save(sess, "lib/long_pants.ckpt".format(kind))
 
