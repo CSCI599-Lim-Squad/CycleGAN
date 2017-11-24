@@ -91,6 +91,7 @@ class SegmentationNN:
                 
                 image = scipy.misc.imread((GROUND_TRUTH_PATH + file.name).replace('jpg', 'png'))              
                 image = scipy.misc.imresize(image, (IMAGE_HEIGHT, IMAGE_WIDTH))
+                image = np.reshape(image, (IMAGE_HEIGHT, IMAGE_WIDTH, 1))
                 label.append(image)
                 count = count + 1
         
