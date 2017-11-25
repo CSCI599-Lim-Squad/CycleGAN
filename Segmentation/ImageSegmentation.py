@@ -186,7 +186,7 @@ class SegmentationNN:
             images = np.concatenate(generated_image)
             images = images[:,:,:,0]
             images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))          
-            save_path = 'output/epoch_{}.jpg'.format(epoch + 1)
+            save_path = 'output/epoch_real_{}.jpg'.format(epoch + 1)
             scipy.misc.imsave(save_path, images) 
             
 tf.reset_default_graph()
