@@ -1,2 +1,2 @@
-model_checkpoint_path: "real.ckpt"
-all_model_checkpoint_paths: "real.ckpt"
+model_checkpoint_path: "short_pants.ckpt"
+all_model_checkpoint_paths: "short_pants.ckpt"
