@@ -131,15 +131,15 @@ class SegmentationNN:
         conv6 = conv2d_batch_relu(conv5, 7, 1, 64, 'conv_1_6')
         max_pool_3 = max_pool(conv6, 3, 2)
         
-        unsampled_1 = unsample(max_pool_3, [8,8]) + max_pool_3
+        unsampled_1 = unsample(max_pool_3, [8,8]) + conv6
         conv1 = conv2d_transpose_batch_relu(unsampled_1, 7, 1, 64, 8, 'conv_2_1') 
         conv2 = conv2d_transpose_batch_relu(conv1, 7, 2, 64, 16, 'conv_2_2')
         
-        unsampled_2 = unsample(conv2, [32,32]) + max_pool_2
+        unsampled_2 = unsample(conv2, [32,32]) + conv4
         conv3 = conv2d_transpose_batch_relu(unsampled_2, 7, 1, 64, 32, 'conv_2_3')
         conv4 = conv2d_transpose_batch_relu(conv3, 7, 2, 64, 64, 'conv_2_4')
         
-        unsampled_3 = unsample(conv5, [128,128]) + max_pool_1
+        unsampled_3 = unsample(conv5, [128,128]) + conv2
         conv5 = conv2d_transpose_batch_relu(unsampled_3, 7, 1, 64, 128, 'conv_2_5')
         conv6 = conv2d_transpose_batch_relu(conv5, 7, 2, 1, 256, 'conv_2_6')
         
