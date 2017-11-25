@@ -197,7 +197,7 @@ tf.reset_default_graph()
 
 with tf.Session() as sess:
     model = SegmentationNN()
- 	print(TO_TRAIN_PATH)
+    print(TO_TRAIN_PATH)
     sess.run(tf.global_variables_initializer())
     model.load_data(TO_TRAIN_PATH, GROUND_TRUTH_PATH)
     model.load_validation(VALIDATION_PATH)
