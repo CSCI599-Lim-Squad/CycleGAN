@@ -12,6 +12,8 @@ try:
 except ImportError:
     from scandir import scandir, walk
 
+kind = 'real'
+
 IMAGE_HEIGHT = 256
 IMAGE_WIDTH = 256
 
