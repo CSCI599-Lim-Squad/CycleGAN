@@ -139,7 +139,7 @@ class SegmentationNN:
         conv3 = conv2d_transpose_batch_relu(unsampled_2, 7, 1, 64, 32, 'conv_2_3')
         conv4 = conv2d_transpose_batch_relu(conv3, 7, 2, 64, 64, 'conv_2_4')
         
-        unsampled_3 = unsample(conv5, [128,128]) + conv1_2
+        unsampled_3 = unsample(conv4, [128,128]) + conv1_2
         conv5 = conv2d_transpose_batch_relu(unsampled_3, 7, 1, 64, 128, 'conv_2_5')
         conv6 = conv2d_transpose_batch_relu(conv5, 7, 2, 1, 256, 'conv_2_6')
         
