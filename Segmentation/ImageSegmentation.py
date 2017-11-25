@@ -190,13 +190,14 @@ class SegmentationNN:
             images = np.concatenate(generated_image)
             images = images[:,:,:,0]
             images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))          
-            save_path = 'output/epoch_real_{}.jpg'.format(epoch + 1)
+            save_path = 'output/epoch_shorts_{}.jpg'.format(epoch + 1)
             scipy.misc.imsave(save_path, images) 
             
 tf.reset_default_graph()
 
 with tf.Session() as sess:
     model = SegmentationNN()
+ 	print(TO_TRAIN_PATH)
     sess.run(tf.global_variables_initializer())
     model.load_data(TO_TRAIN_PATH, GROUND_TRUTH_PATH)
     model.load_validation(VALIDATION_PATH)
