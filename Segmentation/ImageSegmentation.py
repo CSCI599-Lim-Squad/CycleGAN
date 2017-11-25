@@ -12,13 +12,15 @@ try:
 except ImportError:
     from scandir import scandir, walk
 
-kind = 'real'
+#change this when trying to train another model
+kind = 'short_pants'
 
 IMAGE_HEIGHT = 256
 IMAGE_WIDTH = 256
 
+#change this when trying to train another model
 TO_TRAIN_PATH = '2500_TRAIN/'
-GROUND_TRUTH_PATH = 'real2500_TRUTH/'
+GROUND_TRUTH_PATH = 'short_pants2500_TRUTH/'
 VALIDATION_PATH = '997_Train/'
 
 def conv2d_batch_relu(input, kernel_size, stride, num_filter, scope):
@@ -200,5 +202,5 @@ with tf.Session() as sess:
     model.load_validation(VALIDATION_PATH)
     model.train(sess)
     saver = tf.train.Saver()
-    saver.save(sess, "lib/real.ckpt".format(kind))
+    saver.save(sess, "lib/short_pants.ckpt")
 
