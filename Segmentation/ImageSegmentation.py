@@ -71,7 +71,7 @@ def unsample(input, outputdim):
 
 class SegmentationNN:
     def __init__(self, scope_name):
-        self.num_epoch = 10
+        self.num_epoch = 50
         # self.batch_size = 10
         self.batch_size = 10
         self.scope_name = scope_name
