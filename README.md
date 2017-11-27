@@ -1,140 +1,39 @@
-# CycleGAN-TensorFlow
-An implementation of CycleGan using TensorFlow (work in progress).
+### Clothes Style Transfer with Cycle GAN
 
-Original paper: https://arxiv.org/abs/1703.10593
+## Method 1: The original cycle GAN implementation:
 
-## Results on test data
+  This yeilds not so satisfactory result due to the lack of difference between the two training groups. Unlike the picture <-> monnet or
+  horse <-> zebra training, in which great difference and pattern could be found among the two training sets, in our case it is not so easy for the
+  model to identify the difference between pants and shorts.
 
-### apple -> orange
-
-| Input | Output | | Input | Output | | Input | Output |
-|-------|--------|-|-------|--------|-|-------|--------|
-|![apple2orange_1](samples/real_apple2orange_1.jpg) | ![apple2orange_1](samples/fake_apple2orange_1.jpg)| |![apple2orange_2](samples/real_apple2orange_2.jpg) | ![apple2orange_2](samples/fake_apple2orange_2.jpg)| |![apple2orange_3](samples/real_apple2orange_3.jpg) | ![apple2orange_3](samples/fake_apple2orange_3.jpg)|
+  Another reason for unsatisfactory result is that the area that we want to
+  perform style transfer on is usually too detailed for cycle GAN, which is good at pixel to pixel transfer for two sets of images.
 
 
-### orange -> apple
+## Method 2: The skin_loss loss function:
+  
+  We used a simple algorithm to detect skin on the picture and then run cycle GAN with this new loss function. The basic idea is that when we transfer from pants to shorts the skin area decreases and grows when going the other way. The new loss function is supposed to be able to give some sort of 'hint' to the discriminator on which way to go.
 
-| Input | Output | | Input | Output | | Input | Output |
-|-------|--------|-|-------|--------|-|-------|--------|
-|![orange2apple_1](samples/real_orange2apple_1.jpg) | ![orange2apple_1](samples/fake_orange2apple_1.jpg)| |![orange2apple_2](samples/real_orange2apple_2.jpg) | ![orange2apple_2](samples/fake_orange2apple_2.jpg)| |![orange2apple_3](samples/real_orange2apple_3.jpg) | ![orange2apple_3](samples/fake_orange2apple_3.jpg)|
+  We had better result with this loss function. However, there are also several disadventages of using this loss function.
 
-## Environment
+  The first is that this is a very rough skin detection algorithm and does not give very accurate 'hint' to the discriminator. Therefore in some cases the loss function, rather than giving hints, actually confuses the discriminator and generator.
 
-* TensorFlow 1.0.0
-* Python 3.6.0
+  Another one is that this loss function is too specific to our cases. We are training between pants and shorts, which has the great attribute that skin area changes drastically. If there is no such property for other training pairs, or if this other property is very hard to represent, our method will not work anymore.
 
-## Data preparing
+## Method 3: Giving hint directly to the discriminator:
 
-* First, download a dataset, e.g. apple2orange
+  Inspired by the encoding-decoding image segmentation algorithm, we introduced the third method that gives hint directly to the discriminator. In the encoding-decoding image segmentation algorithm, whenever the network is unsampling a layer, the original mapping before pooling is also added to the layer. Since during the encoding stage, certain amount of semantic meanings of the original image is preserved, the unsampled layer will preserve more infromation about the image, which helps to make decoding performs better.
 
-```bash
-$ bash download_dataset.sh apple2orange
-```
+  Therefore, in our case we used an image segmentation alroithm to segment our the area that we want the network to focus on, and then changed the input of the discriminator to
 
-* Write the dataset to tfrecords
+  I' = I + \lambda*S(I)*I
 
-```bash
-$ python3 build_data.py
-```
+  Where I is the original input, S(I) is the segmented map and lambda is a hypervariable.
 
-Check `$ python3 build_data.py --help` for more details.
+  ## This method need further experiment
 
-## Training
+## Method 4: Loss function in more sophisticated way:
+  
+  This method addresses the first disadvantage mentioned in Method 2. Instead of using a very rough loss function , we used segmentation mapping to differentiate between clothes and skin.
 
-```bash
-$ python3 train.py
-```
-
-If you want to change some default settings, you can pass those to the command line, such as:
-
-```bash
-$ python3 train.py  \
-    --X=data/tfrecords/horse.tfrecords \
-    --Y=data/tfrecords/zebra.tfrecords
-```
-
-Here is the list of arguments:
-```
-usage: train.py [-h] [--batch_size BATCH_SIZE] [--image_size IMAGE_SIZE]
-                [--use_lsgan [USE_LSGAN]] [--nouse_lsgan]
-                [--norm NORM] [--lambda1 LAMBDA1] [--lambda2 LAMBDA2]
-                [--learning_rate LEARNING_RATE] [--beta1 BETA1]
-                [--pool_size POOL_SIZE] [--ngf NGF] [--X X] [--Y Y]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --batch_size BATCH_SIZE
-                        batch size, default: 1
-  --image_size IMAGE_SIZE
-                        image size, default: 256
-  --use_lsgan [USE_LSGAN]
-                        use lsgan (mean squared error) or cross entropy loss,
-                        default: True
-  --nouse_lsgan
-  --norm NORM           [instance, batch] use instance norm or batch norm,
-                        default: instance
-  --lambda1 LAMBDA1     weight for forward cycle loss (X->Y->X), default: 10.0
-  --lambda2 LAMBDA2     weight for backward cycle loss (Y->X->Y), default:
-                        10.0
-  --learning_rate LEARNING_RATE
-                        initial learning rate for Adam, default: 0.0002
-  --beta1 BETA1         momentum term of Adam, default: 0.5
-  --pool_size POOL_SIZE
-                        size of image buffer that stores previously generated
-                        images, default: 50
-  --ngf NGF             number of gen filters in first conv layer, default: 64
-  --X X                 X tfrecords file for training, default:
-                        data/tfrecords/apple.tfrecords
-  --Y Y                 Y tfrecords file for training, default:
-                        data/tfrecords/orange.tfrecords
-```
-
-Check TensorBoard to see training progress and generated images.
-
-```
-$ tensorboard --logdir checkpoints/${datetime}
-```
-
-Here are some funny screenshots from TensorBoard when training orange -> apple:
-
-![train_screenshot](samples/train_screenshot.png)
-
-
-### Notes
-* If high constrast background colors between input and generated images are observed (e.g. black becomes white), you should restart your training!
-* Train several times to get the best models.
-
-## Export model
-You can export from a checkpoint to a standalone GraphDef file as follow:
-
-```bash
-$ python3 export_graph.py --checkpoint_dir checkpoints/${datetime} \
-                          --XtoY_model apple2orange.pb \
-                          --YtoX_model orange2apple.pb \
-                          --image_size 256
-```
-
-
-## Inference
-After exporting model, you can use it for inference. For example:
-
-```bash
-python3 inference.py --model pretrained/apple2orange.pb \
-                     --input input_sample.jpg \
-                     --output output_sample.jpg \
-                     --image_size 256
-```
-
-## Pretrained models
-My pretrained models are available at https://github.com/vanhuyz/CycleGAN-TensorFlow/releases
-
-## Contributing
-Please open an issue if you have any trouble or found anything incorrect in my code :)
-
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## References
-
-* CycleGAN paper: https://arxiv.org/abs/1703.10593
-* Official source code in Torch: https://github.com/junyanz/CycleGAN
+  ## This method need further experiment

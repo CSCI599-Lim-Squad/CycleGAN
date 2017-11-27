@@ -13,14 +13,14 @@ except ImportError:
     from scandir import scandir, walk
 
 #change this when trying to train another model
-kind = 'short_pants'
+kind = 'combined_pants'
 
 IMAGE_HEIGHT = 256
 IMAGE_WIDTH = 256
 
-#change this when trying to train another model
+# #change this when trying to train another model
 TO_TRAIN_PATH = '2500_TRAIN/'
-GROUND_TRUTH_PATH = 'short_pants2500_TRUTH/'
+GROUND_TRUTH_PATH = 'combined2500_TRUTH/'
 VALIDATION_PATH = '997_Train/'
 
 def conv2d_batch_relu(input, kernel_size, stride, num_filter, scope):
@@ -70,15 +70,17 @@ def unsample(input, outputdim):
     return unsample
 
 class SegmentationNN:
-    def __init__(self):
+    def __init__(self, scope_name):
         self.num_epoch = 50
+        # self.batch_size = 10
         self.batch_size = 10
+        self.scope_name = scope_name
         self.input = tf.placeholder(tf.float32, [self.batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, 3])
         self.label = tf.placeholder(tf.float32, [self.batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, 1])
-        self.output = self.build_model(self.input)
+        self.output = self.build_model(self.input, scope_name)
         print(self.output.shape)
 
-        self.log_step = 50
+        self.log_step = 100
         
         self.lr = 1e-4
         
@@ -124,26 +126,28 @@ class SegmentationNN:
         conv1_1 = conv2d_batch_relu(input, 7, 2, 64, 'conv_1_1')
         conv1_2 = conv2d_batch_relu(conv1_1, 7, 1, 64, 'conv_1_2')
         max_pool_1 = max_pool(conv1_2, 3, 2)
+
+        with tf.variable_scope(scope_name)
         
-        conv1_3 = conv2d_batch_relu(max_pool_1, 7, 2, 64, 'conv_1_3')
-        conv1_4 = conv2d_batch_relu(conv1_3, 7, 1, 64, 'conv_1_4')
-        max_pool_2 = max_pool(conv1_4, 3, 2)
-        
-        conv1_5 = conv2d_batch_relu(max_pool_2, 7, 2, 64, 'conv_1_5')
-        conv1_6 = conv2d_batch_relu(conv1_5, 7, 1, 64, 'conv_1_6')
-        max_pool_3 = max_pool(conv1_6, 3, 2)
-        
-        unsampled_1 = unsample(max_pool_3, [8,8]) + conv1_6
-        conv1 = conv2d_transpose_batch_relu(unsampled_1, 7, 1, 64, 8, 'conv_2_1') 
-        conv2 = conv2d_transpose_batch_relu(conv1, 7, 2, 64, 16, 'conv_2_2')
-        
-        unsampled_2 = unsample(conv2, [32,32]) + conv1_4
-        conv3 = conv2d_transpose_batch_relu(unsampled_2, 7, 1, 64, 32, 'conv_2_3')
-        conv4 = conv2d_transpose_batch_relu(conv3, 7, 2, 64, 64, 'conv_2_4')
-        
-        unsampled_3 = unsample(conv4, [128,128]) + conv1_2
-        conv5 = conv2d_transpose_batch_relu(unsampled_3, 7, 1, 64, 128, 'conv_2_5')
-        conv6 = conv2d_transpose_batch_relu(conv5, 7, 2, 1, 256, 'conv_2_6')
+            conv1_3 = conv2d_batch_relu(max_pool_1, 7, 2, 64, 'conv_1_3')
+            conv1_4 = conv2d_batch_relu(conv1_3, 7, 1, 64, 'conv_1_4')
+            max_pool_2 = max_pool(conv1_4, 3, 2)
+            
+            conv1_5 = conv2d_batch_relu(max_pool_2, 7, 2, 64, 'conv_1_5')
+            conv1_6 = conv2d_batch_relu(conv1_5, 7, 1, 64, 'conv_1_6')
+            max_pool_3 = max_pool(conv1_6, 3, 2)
+            
+            unsampled_1 = unsample(max_pool_3, [8,8]) + conv1_6
+            conv1 = conv2d_transpose_batch_relu(unsampled_1, 7, 1, 64, 8, 'conv_2_1') 
+            conv2 = conv2d_transpose_batch_relu(conv1, 7, 2, 64, 16, 'conv_2_2')
+            
+            unsampled_2 = unsample(conv2, [32,32]) + conv1_4
+            conv3 = conv2d_transpose_batch_relu(unsampled_2, 7, 1, 64, 32, 'conv_2_3')
+            conv4 = conv2d_transpose_batch_relu(conv3, 7, 2, 64, 64, 'conv_2_4')
+            
+            unsampled_3 = unsample(conv4, [128,128]) + conv1_2
+            conv5 = conv2d_transpose_batch_relu(unsampled_3, 7, 1, 64, 128, 'conv_2_5')
+            conv6 = conv2d_transpose_batch_relu(conv5, 7, 2, 1, 256, 'conv_2_6')
         
         return conv6
     
@@ -190,18 +194,23 @@ class SegmentationNN:
             images = np.concatenate(generated_image)
             images = images[:,:,:,0]
             images = np.reshape(images, (self.batch_size*IMAGE_HEIGHT, IMAGE_WIDTH))          
-            save_path = 'output/epoch_shorts_{}.jpg'.format(epoch + 1)
-            scipy.misc.imsave(save_path, images) 
+            save_path = 'output/epoch_combined_{}.jpg'.format(epoch + 1)
+            scipy.misc.imsave(save_path, images)
+
+    def get_one_result(self, input, sess):
+        output = sess.run([self.output], feed_dict = {self.input: input})
+        return output
+
             
 tf.reset_default_graph()
 
 with tf.Session() as sess:
-    model = SegmentationNN()
+    model = SegmentationNN('combined_model')
     print(GROUND_TRUTH_PATH)
     sess.run(tf.global_variables_initializer())
     model.load_data(TO_TRAIN_PATH, GROUND_TRUTH_PATH)
     model.load_validation(VALIDATION_PATH)
     model.train(sess)
     saver = tf.train.Saver()
-    saver.save(sess, "lib/short_pants.ckpt")
+    saver.save(sess, "lib/combined.ckpt")
 
