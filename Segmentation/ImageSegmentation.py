@@ -127,7 +127,7 @@ class SegmentationNN:
         conv1_2 = conv2d_batch_relu(conv1_1, 7, 1, 64, 'conv_1_2')
         max_pool_1 = max_pool(conv1_2, 3, 2)
 
-        with tf.variable_scope(scope_name)
+        with tf.variable_scope(scope_name):
         
             conv1_3 = conv2d_batch_relu(max_pool_1, 7, 2, 64, 'conv_1_3')
             conv1_4 = conv2d_batch_relu(conv1_3, 7, 1, 64, 'conv_1_4')
