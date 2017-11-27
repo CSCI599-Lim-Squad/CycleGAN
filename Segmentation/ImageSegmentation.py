@@ -122,7 +122,7 @@ class SegmentationNN:
         return validation
 
         
-    def build_model(self, input):
+    def build_model(self, input, scope_name):
         conv1_1 = conv2d_batch_relu(input, 7, 2, 64, 'conv_1_1')
         conv1_2 = conv2d_batch_relu(conv1_1, 7, 1, 64, 'conv_1_2')
         max_pool_1 = max_pool(conv1_2, 3, 2)
