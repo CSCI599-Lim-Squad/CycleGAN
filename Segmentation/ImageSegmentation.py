@@ -20,7 +20,7 @@ IMAGE_WIDTH = 256
 
 # #change this when trying to train another model
 TO_TRAIN_PATH = '2500_TRAIN/'
-GROUND_TRUTH_PATH = 'combined2500_TRUTH/'
+GROUND_TRUTH_PATH = 'legs2500_TRUTH/'
 VALIDATION_PATH = '997_Train/'
 
 def conv2d_batch_relu(input, kernel_size, stride, num_filter, scope):
@@ -211,5 +211,5 @@ with tf.Session() as sess:
     model.load_validation(VALIDATION_PATH)
     model.train(sess)
     saver = tf.train.Saver()
-    saver.save(sess, "lib/combined.ckpt")
+    saver.save(sess, "lib/legs.ckpt")
 
