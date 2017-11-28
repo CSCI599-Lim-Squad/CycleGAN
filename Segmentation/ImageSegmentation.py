@@ -159,6 +159,7 @@ class SegmentationNN:
         return tf.train.AdamOptimizer(learning_rate = self.lr).minimize(self.loss)
         
     def train(self, sess):
+        print('not in scope')
         iteration = 0
         losses = []
         accuracies = []
