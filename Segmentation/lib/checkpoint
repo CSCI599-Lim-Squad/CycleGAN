@@ -1,2 +1,2 @@
-model_checkpoint_path: "combined.ckpt"
-all_model_checkpoint_paths: "combined.ckpt"
+model_checkpoint_path: "legs.ckpt"
+all_model_checkpoint_paths: "legs.ckpt"
